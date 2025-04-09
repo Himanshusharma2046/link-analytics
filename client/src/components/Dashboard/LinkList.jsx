@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { getLinks } from '../../features/links/linkSlice'
 import { FaCopy, FaChartBar } from 'react-icons/fa'
