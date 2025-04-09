@@ -14,7 +14,11 @@ connectDB();
 const app = express();
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: process.env.NODE_ENV === 'production' 
+    ? 'https://your-frontend-url.vercel.app' 
+    : 'http://localhost:5173'
+}));
 app.use(express.json());
 
 // Import routes
