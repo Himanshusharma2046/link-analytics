@@ -1,102 +1,104 @@
 import { useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { getLinks, getLinkById } from '../../features/links/linkSlice'
-import { formatDate, isExpired } from '../../utils/formatDate'
+import { getLinks } from '../../features/links/linkSlice'
+import { FaCopy, FaChartBar } from 'react-icons/fa'
+import { Link } from 'react-router-dom'
+import { toast } from 'react-toastify'
 import Spinner from '../Layout/Spinner'
+import { formatDate } from '../../utils/formatDate'
 
-function LinkList({ onSelectLink }) {
+function LinkList() {
   const dispatch = useDispatch()
-  const { links, isLoading } = useSelector((state) => state.links)
+  const { links, isLoading, isError, message } = useSelector(
+    (state) => state.links
+  )
 
   useEffect(() => {
     dispatch(getLinks())
   }, [dispatch])
 
-  const handleSelectLink = (id) => {
-    dispatch(getLinkById(id))
-    onSelectLink()
-  }
-
   if (isLoading) {
     return <Spinner />
   }
 
+  if (isError) {
+    return <div className="text-red-500">Error: {message}</div>
+  }
+
+  if (!links || links.length === 0) {
+    return <div className="text-gray-500 mt-4">No links found. Create your first short link above!</div>
+  }
+
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md">
+    <div className="mt-8">
       <h2 className="text-xl font-semibold mb-4">Your Links</h2>
-      {links.length === 0 ? (
-        <p className="text-gray-500">You haven't created any links yet.</p>
-      ) : (
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Original URL
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Short URL
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Clicks
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Created
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {links.map((link) => (
-                <tr key={link._id}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 truncate max-w-xs">
-                    {link.originalUrl}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-500">
-                    <a 
-                      href={`http://localhost:5000/${link.shortUrl}`} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                    >
-                      /{link.shortUrl}
-                    </a>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {link.clicks.length}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {formatDate(link.createdAt)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {isExpired(link.expiresAt) ? (
-                      <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
-                        Expired
-                      </span>
-                    ) : (
-                      <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                        Active
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <button
-                      onClick={() => handleSelectLink(link._id)}
-                      className="text-blue-600 hover:text-blue-900"
-                    >
-                      View Stats
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      <div className="space-y-4">
+        {links.map((link) => (
+          <LinkItem key={link._id} link={link} />
+        ))}
+      </div>
+    </div>
+  )
+}
+
+// LinkItem component (internal to LinkList.jsx)
+function LinkItem({ link }) {
+  const [copied, setCopied] = useState(false)
+
+  // Get the base URL for short links from environment variables
+  // If VITE_SHORT_URL_BASE is not available, fall back to environment detection
+  const baseUrl = import.meta.env.VITE_SHORT_URL_BASE || 
+    (import.meta.env.PROD
+      ? 'https://link-analytics-api.onrender.com'
+      : 'http://localhost:5000')
+
+  const shortUrl = `${baseUrl}/${link.shortUrl}`
+
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(shortUrl)
+    setCopied(true)
+    toast.success('Link copied to clipboard')
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  return (
+    <div className="bg-white p-4 rounded-lg shadow-md">
+      <div className="flex flex-col md:flex-row md:items-center justify-between mb-2">
+        <h3 className="text-lg font-semibold truncate mr-2">
+          {link.originalUrl}
+        </h3>
+        <div className="flex items-center mt-2 md:mt-0">
+          <Link
+            to={`/dashboard/links/${link._id}`}
+            className="text-blue-500 hover:text-blue-700 mr-4 flex items-center"
+          >
+            <FaChartBar className="mr-1" /> Stats
+          </Link>
+          <button
+            onClick={copyToClipboard}
+            className="text-gray-500 hover:text-gray-700 flex items-center"
+          >
+            <FaCopy className="mr-1" /> {copied ? 'Copied!' : 'Copy'}
+          </button>
         </div>
-      )}
+      </div>
+      <div className="flex flex-col md:flex-row md:items-center text-sm text-gray-600">
+        <a
+          href={shortUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-500 hover:text-blue-700 truncate mr-4"
+        >
+          {shortUrl}
+        </a>
+        <div className="mt-1 md:mt-0">
+          <span className="mr-4">Clicks: {link.clicks.length}</span>
+          <span>Created: {formatDate(link.createdAt)}</span>
+          {link.expiresAt && (
+            <span className="ml-4">Expires: {formatDate(link.expiresAt)}</span>
+          )}
+        </div>
+      </div>
     </div>
   )
 }

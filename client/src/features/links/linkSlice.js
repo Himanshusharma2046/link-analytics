@@ -3,7 +3,7 @@ import linkService from '../../services/linkService'
 
 const initialState = {
   links: [],
-  currentLink: null,
+  link: null,
   isError: false,
   isSuccess: false,
   isLoading: false,
@@ -15,8 +15,7 @@ export const createLink = createAsyncThunk(
   'links/create',
   async (linkData, thunkAPI) => {
     try {
-      const token = thunkAPI.getState().auth.user.token
-      return await linkService.createLink(linkData, token)
+      return await linkService.createLink(linkData)
     } catch (error) {
       const message =
         (error.response &&
@@ -34,8 +33,7 @@ export const getLinks = createAsyncThunk(
   'links/getAll',
   async (_, thunkAPI) => {
     try {
-      const token = thunkAPI.getState().auth.user.token
-      return await linkService.getLinks(token)
+      return await linkService.getLinks()
     } catch (error) {
       const message =
         (error.response &&
@@ -48,13 +46,12 @@ export const getLinks = createAsyncThunk(
   }
 )
 
-// Get link by ID
+// Get link by id
 export const getLinkById = createAsyncThunk(
   'links/getById',
-  async (id, thunkAPI) => {
+  async (linkId, thunkAPI) => {
     try {
-      const token = thunkAPI.getState().auth.user.token
-      return await linkService.getLinkById(id, token)
+      return await linkService.getLinkById(linkId)
     } catch (error) {
       const message =
         (error.response &&
@@ -68,13 +65,10 @@ export const getLinkById = createAsyncThunk(
 )
 
 export const linkSlice = createSlice({
-  name: 'link',
+  name: 'links',
   initialState,
   reducers: {
     reset: (state) => initialState,
-    clearCurrentLink: (state) => {
-      state.currentLink = null
-    },
   },
   extraReducers: (builder) => {
     builder
@@ -110,7 +104,7 @@ export const linkSlice = createSlice({
       .addCase(getLinkById.fulfilled, (state, action) => {
         state.isLoading = false
         state.isSuccess = true
-        state.currentLink = action.payload
+        state.link = action.payload
       })
       .addCase(getLinkById.rejected, (state, action) => {
         state.isLoading = false
@@ -120,5 +114,5 @@ export const linkSlice = createSlice({
   },
 })
 
-export const { reset, clearCurrentLink } = linkSlice.actions
+export const { reset } = linkSlice.actions
 export default linkSlice.reducer
