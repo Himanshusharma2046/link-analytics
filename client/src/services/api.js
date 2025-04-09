@@ -1,8 +1,8 @@
 import axios from 'axios'
 
-// Determine the base URL based on environment
-const BASE_URL = process.env.NODE_ENV === 'production'
-  ? 'https://link-analytics-api.onrender.com'  // Replace with your actual production backend URL
+// For Vite, use import.meta.env instead of process.env
+const BASE_URL = import.meta.env.PROD
+  ? 'https://link-analytics-api.onrender.com/api'  // Your production backend URL
   : 'http://localhost:5000/api'
 
 const api = axios.create({

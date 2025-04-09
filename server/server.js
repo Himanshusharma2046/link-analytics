@@ -16,7 +16,7 @@ const app = express();
 // Middleware
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
-    ? 'https://link-analytics-frontend-glw131w5l.vercel.app/' 
+    ? 'https://link-analytics-frontend-d0ynl1nji.vercel.app/' 
     : 'http://localhost:5173'
 }));
 app.use(express.json());
