@@ -2,7 +2,7 @@ import axios from 'axios'
 
 // Determine the base URL based on environment
 const BASE_URL = process.env.NODE_ENV === 'production'
-  ? 'https://your-backend-url.onrender.com/api'  // Replace with your actual production backend URL
+  ? 'https://link-analytics-api.onrender.com'  // Replace with your actual production backend URL
   : 'http://localhost:5000/api'
 
 const api = axios.create({
